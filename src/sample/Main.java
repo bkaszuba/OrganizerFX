@@ -37,14 +37,14 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         ObservableList<Event> AllEvents = FXCollections.observableArrayList();;
-        AllEvents.add(new Event(LocalDate.of(2016, 12, 10), "20:15", "Ciekawy opis"));
+        /*AllEvents.add(new Event(LocalDate.of(2016, 12, 10), "20:15", "Ciekawy opis"));
         AllEvents.add(new Event(LocalDate.of(2017, 11, 22), "11:50", "Dlugi opis dla"));
         AllEvents.add(new Event(LocalDate.of(2036, 3,  5), "7:45", "Budzik"));
         AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "8:30", "Technologie Programowania"));
         AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "10:15", "Podstawy Sieci"));
         AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "12:00", "Inteligentna Analiza Danych"));
         AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "13:30", "Siłka!!!"));
-        //Organizer.readDataFromFile("allData.txt", AllEvents);
+        */Organizer.readDataFromFile("allData.txt", AllEvents);
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Organizer Alpha");
@@ -84,9 +84,15 @@ public class Main extends Application {
 
         //Button
         Button addButton = new Button("Add");
-        addButton.setOnAction( e-> addButtonClicked(AllEvents));
+        addButton.setOnAction( e-> {
+            addButtonClicked(AllEvents);
+            table.setItems(getEvents(AllEvents)); // update data
+        });
         Button deleteButton = new Button("Delete");
-        deleteButton.setOnAction( e-> deleteButtonClicked());
+        deleteButton.setOnAction( e-> {
+            deleteButtonClicked(AllEvents);
+            table.setItems(getEvents(AllEvents)); //update data
+        });
 
         HBox hBox = new HBox();
         hBox.setPadding(new Insets(10, 10, 10, 10));
@@ -115,6 +121,7 @@ public class Main extends Application {
         table = new TableView<>();
         table.setItems(getEvents(AllEvents));
         table.getColumns().addAll(dateColumn,hourColumn,descriptionColumn);
+        descriptionColumn.setPrefWidth(298); // adjust width to match down buttons
 
 
 
@@ -154,12 +161,20 @@ public class Main extends Application {
         descriptionInput.clear();
     }
 
-    private void deleteButtonClicked() {
-        ObservableList<Event> eventSelected, AllEvents;
-        AllEvents = table.getItems();
+    private void deleteButtonClicked(ObservableList<Event> AllEvents) {
+        ObservableList<Event> eventSelected,tmp;
+        tmp = FXCollections.observableArrayList();
+        //AllEvents = table.getItems();
         eventSelected = table.getSelectionModel().getSelectedItems();
+        //System.out.println(eventSelected.get(0).getDescription());
+        for(int i=0;i<AllEvents.size();i++){
+            if (eventSelected.get(0).getDescription().equals(AllEvents.get(i).getDescription())) {
 
-        eventSelected.forEach(AllEvents::remove);
+                //eventSelected.remove(0);
+                AllEvents.remove(i);
+            }
+        }
+
     }
 
     //getAllEvents

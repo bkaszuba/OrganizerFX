@@ -36,16 +36,17 @@ public class Organizer {
         BufferedReader bufferedReader = new BufferedReader(fileReader);
         StringBuffer stringBuffer = new StringBuffer();
         String line;
-        while((line = bufferedReader.readLine()) != "d")
+        while((line = bufferedReader.readLine()) != null)
         {
+            //bufferedReader.readLine();
             System.out.println(line);
             if(howMuch==0) tmpDate = line;
             else if(howMuch==1) tmpHour=line;
             else if(howMuch==2){
                 tmpDescr=line;
-                System.out.println("poszlo");
-                AllEvents.add(new Event(LocalDate.parse(tmpDate, formatter), tmpHour, tmpDescr));
-                howMuch=0;
+                System.out.println("Data: "+tmpDate+" Godzina: "+tmpHour+" Opis: "+ tmpDescr);
+                AllEvents.add(new Event((LocalDate.parse(tmpDate, formatter)), tmpHour, tmpDescr));
+                howMuch=-1;
 
             }
             System.out.println(howMuch);
