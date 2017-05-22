@@ -3,6 +3,8 @@
 .idea
 target
 out
+testowe.txt
+
 
 # Log file
 *.log
