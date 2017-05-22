@@ -15,7 +15,7 @@ public class AboutWindow {
 
         static int onedata;
 
-        public static int display(String message, int width, int height, Stage PrimaryStage){
+        public static void display(String message, int width, int height, Stage PrimaryStage){
             Stage window = new Stage();
             window.initModality(Modality.APPLICATION_MODAL);
             window.setTitle("About Program");
@@ -24,8 +24,6 @@ public class AboutWindow {
 
             Button close = new Button("Close");
             close.setOnAction( e-> {
-                onedata=200;
-                //PrimaryStage.setHeight(600);
                 window.close();
             });
 
@@ -35,8 +33,6 @@ public class AboutWindow {
             Scene scene = new Scene(layout, width, height);
             window.setScene(scene);
             window.showAndWait();
-
-            return onedata;
         }
     }
 

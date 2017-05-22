@@ -131,8 +131,7 @@ public class Main extends Application {
         Scene scene = new Scene(vBox, 600,450);
         settingOption.setOnAction(e->SettingsWindow.display(primaryStage, table));
         aboutOption.setOnAction(e->{
-            int size=AboutWindow.display("This beta version of organizer was made by BKaszuba & MMadej", 400,150, primaryStage);
-            //primaryStage.setWidth(size);
+            AboutWindow.display("This beta version of organizer was made by BKaszuba & MMadej", 400,150, primaryStage);
         });
         Label infoAboutProgrma = new Label("Program was made By Bartlomiej Kaszuba & Michal Madej");
         StackPane infoAboutProgramLayout = new StackPane();
