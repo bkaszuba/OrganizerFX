@@ -12,16 +12,26 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import javax.xml.soap.Text;
+//import java.awt.*;
 import java.io.IOException;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -37,14 +47,21 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception{
         ObservableList<Event> AllEvents = FXCollections.observableArrayList();;
-        /*AllEvents.add(new Event(LocalDate.of(2016, 12, 10), "20:15", "Ciekawy opis"));
-        AllEvents.add(new Event(LocalDate.of(2017, 11, 22), "11:50", "Dlugi opis dla"));
-        AllEvents.add(new Event(LocalDate.of(2036, 3,  5), "7:45", "Budzik"));
-        AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "8:30", "Technologie Programowania"));
-        AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "10:15", "Podstawy Sieci"));
-        AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "12:00", "Inteligentna Analiza Danych"));
-        AllEvents.add(new Event(LocalDate.of(2017, 5,  19), "13:30", "Siłka!!!"));
-        */Organizer.readDataFromFile("allData.txt", AllEvents);
+        Callback<DatePicker,DateCell> dayCellFactory = new Callback<DatePicker, DateCell>(){
+            public DateCell call(final DatePicker datePicker1){
+                return new DateCell(){
+                    public void updateItem(LocalDate item, boolean empty){
+                        DayOfWeek day = DayOfWeek.from(item);
+                        for(int i=0;i<AllEvents.size();i++){
+                            if( item.equals(AllEvents.get(i).getDate())){
+                                this.setTextFill(Color.RED);
+                            }
+                        }
+                    }
+                };
+            }
+        };
+        Organizer.readDataFromFile("allData.txt", AllEvents);
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Organizer Alpha");
@@ -66,6 +83,7 @@ public class Main extends Application {
         dateInput = new TextField();
         dateInput.setPromptText("Enter Date");
         dateInput.setMinWidth(100);
+        dateInput.setText("2017-05-22");
         //TextFields to enter hour
         hourInput = new TextField();
         hourInput.setPromptText("Enter hour");
@@ -77,6 +95,7 @@ public class Main extends Application {
 
         datePicker = new DatePicker();
         datePicker.setOnAction( e-> table.setItems(getEvents(AllEvents)));
+        datePicker.setDayCellFactory(dayCellFactory);
         HBox upHBox = new HBox();
         upHBox.setPadding(new Insets(10,10,10,10));
         upHBox.setAlignment(Pos.CENTER);
@@ -113,9 +132,6 @@ public class Main extends Application {
         //Main menu bar
         MenuBar menuBar = new MenuBar();
         menuBar.getMenus().addAll(view);
-
-
-
 
 
         table = new TableView<>();
@@ -186,6 +202,20 @@ public class Main extends Application {
         }
         return events;
 
+    }
+    public void colorDates(){
+        Callback<DatePicker,DateCell> dayCellFactory = new Callback<DatePicker, DateCell>(){
+            public DateCell call(final DatePicker datePicker1){
+                return new DateCell(){
+                    public void updateItem(LocalDate item, boolean empty){
+                        DayOfWeek day = DayOfWeek.from(item);
+                        if( day ==DayOfWeek.SATURDAY){
+                            this.setTextFill(Color.RED);
+                        }
+                    }
+                };
+            }
+        };
     }
 
 

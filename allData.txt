@@ -8,17 +8,20 @@ Dlugi opis dla
 7:45
 Budzik
 2017-05-19
-8:30
-Technologie Programowania
-2017-05-19
 12:00
 Inteligentna Analiza Danych
 2017-05-19
 20:00
 Spanie
 2017-05-22
-11:30
-xd
-2017-05-22
 16:15
 Kompo
+2017-05-22
+16:50
+Test
+2017-05-22
+11:30
+nowosc
+2017-05-23
+11:30
+xd
