@@ -1,27 +1,15 @@
-2016-12-10
-20:15
-Ciekawy opis
-2017-11-22
-11:50
-Dlugi opis dla
-2036-03-05
-7:45
-Budzik
-2017-05-19
-12:00
+2017-05-26
+10:15
+Podstawy Sieci Komputerowych
+2017-05-26
+12:05
 Inteligentna Analiza Danych
-2017-05-19
-20:00
-Spanie
-2017-05-22
-16:15
-Kompo
-2017-05-22
-16:50
-Test
-2017-05-22
-11:30
-nowosc
-2017-05-23
-11:30
-xd
+2017-05-26
+18:38
+Proba vol2
+2017-09-30
+20:45
+Nowee
+2017-05-26
+18:40
+Dziala!!

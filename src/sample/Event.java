@@ -17,11 +17,8 @@ public class Event {
         this.description = description;
         this.hour = hour;
     }
-    public Event(){
-        this.date= null;
-        this.description = null;
-        this.hour = null;
-    }
+
+    public Event(){}
 
 
     public LocalDate getDate() {
@@ -49,4 +46,7 @@ public class Event {
     }
 
 
+    public String toString(){
+        return date+" "+ hour+ " " + description;
+    }
 }

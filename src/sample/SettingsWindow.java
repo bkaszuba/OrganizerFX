@@ -23,6 +23,7 @@ public class SettingsWindow {
         window.setTitle("Settings");
         Label label = new Label();
         label.setText("Set size of main window");
+        label.setId("EditLabel");
         TextField height = new TextField();
         height.setPromptText("Type height");
         TextField width = new TextField();
@@ -93,9 +94,9 @@ public class SettingsWindow {
         mainLayout.getChildren().addAll(label, textFieldsLayout, checklayout,buttonsLayout);
 
         Scene scene = new Scene(mainLayout, 400, 200);
+        Main.readCSSFile(scene);
         window.setScene(scene);
         window.showAndWait();
-
 
     }
 }

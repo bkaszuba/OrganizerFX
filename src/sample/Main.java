@@ -1,13 +1,10 @@
 package sample;
 
 import javafx.application.Application;
-import javafx.beans.InvalidationListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -23,45 +20,38 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
-import javafx.scene.text.TextAlignment;
-import javafx.stage.Modality;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
-import javax.xml.soap.Text;
 //import java.awt.*;
+import java.io.File;
 import java.io.IOException;
-import java.time.DayOfWeek;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.Month;
+import java.sql.SQLException;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
 
 public class Main extends Application {
-    TableView<Event> table;
+    static TableView<Event> table;
     TextField dateInput, hourInput, descriptionInput;
-    DatePicker datePicker;
+    static DatePicker datePicker;
     Scene sceneAboutProgram;
+    Scene scene;
+    DirectoryChooser directoryChooser;
+    FileChooser fileChooser;
+    String directoryPath;
+    String filePath;
 
     @Override
     public void start(Stage primaryStage) throws Exception{
         ObservableList<Event> AllEvents = FXCollections.observableArrayList();;
-        Callback<DatePicker,DateCell> dayCellFactory = new Callback<DatePicker, DateCell>(){
-            public DateCell call(final DatePicker datePicker1){
-                return new DateCell(){
-                    public void updateItem(LocalDate item, boolean empty){
-                        DayOfWeek day = DayOfWeek.from(item);
-                        for(int i=0;i<AllEvents.size();i++){
-                            if( item.equals(AllEvents.get(i).getDate())){
-                                this.setTextFill(Color.RED);
-                            }
-                        }
-                    }
-                };
-            }
-        };
-        Organizer.readDataFromFile("allData.txt", AllEvents);
+
+
+        SQLConnection.sendDataFromDBToProgram(AllEvents);
+        //Outlook.saveToOutloock("", AllEvents);
+        //Outlook.saveToOutloock("C:\\Users\\Kaszuba\\Desktop", AllEvents);
+        //Organizer.readDataFromFile("allData.txt", AllEvents);
 
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml"));
         primaryStage.setTitle("Organizer Alpha");
@@ -95,7 +85,7 @@ public class Main extends Application {
 
         datePicker = new DatePicker();
         datePicker.setOnAction( e-> table.setItems(getEvents(AllEvents)));
-        datePicker.setDayCellFactory(dayCellFactory);
+        datePicker.setDayCellFactory(colorAllDates(AllEvents));
         HBox upHBox = new HBox();
         upHBox.setPadding(new Insets(10,10,10,10));
         upHBox.setAlignment(Pos.CENTER);
@@ -105,49 +95,105 @@ public class Main extends Application {
         Button addButton = new Button("Add");
         addButton.setOnAction( e-> {
             addButtonClicked(AllEvents);
-            table.setItems(getEvents(AllEvents)); // update data
+            refreshData(AllEvents, table);
+            //datePicker.setDayCellFactory(colorAllDates(AllEvents));
+            //table.setItems(getEvents(AllEvents)); // update data
         });
         Button deleteButton = new Button("Delete");
         deleteButton.setOnAction( e-> {
             deleteButtonClicked(AllEvents);
+            refreshData(AllEvents, table);
+            //datePicker.setDayCellFactory(colorAllDates(AllEvents));
+            //table.setItems(getEvents(AllEvents)); //update data
+        });
+        Button editButton= new Button("Edit");
+        editButton.setOnAction( e-> {
+            editButtonClicked(primaryStage, AllEvents, table);
+            datePicker.setDayCellFactory(colorAllDates(AllEvents));
             table.setItems(getEvents(AllEvents)); //update data
         });
 
         HBox hBox = new HBox();
         hBox.setPadding(new Insets(10, 10, 10, 10));
         hBox.setSpacing(10);
-        hBox.getChildren().addAll(dateInput, hourInput, descriptionInput, addButton, deleteButton);
+        hBox.getChildren().addAll(dateInput, hourInput, descriptionInput, addButton,deleteButton, editButton);
 
         //Menu
-        Menu view = new Menu("_View");
+            Menu view = new Menu("_View");
+            Menu outlook = new Menu("_Outlook");
+            Menu xml = new Menu("_XML");
         //menu items
         MenuItem settingOption = new MenuItem("Settings...");
-
+        //outlook
+        MenuItem importOutlook = new MenuItem("Import Outlook...");
+        MenuItem exportOutlook = new MenuItem("Export Outlook...");
+        outlook.getItems().addAll(importOutlook,exportOutlook);
+        //XML
+        MenuItem importXML = new MenuItem("Import XML...");
+        MenuItem exportXML = new MenuItem("Export XML...");
+        xml.getItems().addAll(importXML, exportXML);
         //settingOption.setDisable(true);
         view.getItems().add(settingOption);
         view.getItems().add(new SeparatorMenuItem());
         MenuItem aboutOption = new MenuItem("About program...");
 
         view.getItems().add(aboutOption);
+        view.getItems().add(new SeparatorMenuItem());
+        MenuItem filterOption = new MenuItem("Filter...");
+        view.getItems().add(filterOption);
         //Main menu bar
         MenuBar menuBar = new MenuBar();
-        menuBar.getMenus().addAll(view);
+        menuBar.getMenus().addAll(view, outlook, xml);
 
 
         table = new TableView<>();
         table.setItems(getEvents(AllEvents));
         table.getColumns().addAll(dateColumn,hourColumn,descriptionColumn);
-        descriptionColumn.setPrefWidth(298); // adjust width to match down buttons
+        descriptionColumn.setPrefWidth(350); // adjust width to match down buttons
 
 
 
         VBox vBox = new VBox();
         vBox.getChildren().addAll(menuBar,upHBox,table, hBox);
 
-        Scene scene = new Scene(vBox, 600,450);
+        scene = new Scene(vBox, 660,450);
+
+        directoryChooser = new DirectoryChooser();
+        exportOutlook.setOnAction( e-> {
+            directoryPath = directoryChooser.showDialog(primaryStage).getAbsolutePath();
+            directoryPath = directoryPath.replace("\\", "\\\\");
+            directoryPath = directoryPath +"\\\\";
+           Outlook.saveToOutloock(directoryPath, AllEvents);
+        });
+        fileChooser = new FileChooser();
+        importOutlook.setOnAction( e-> {
+            filePath = fileChooser.showOpenDialog(primaryStage).getAbsolutePath();
+            filePath = filePath.replace("\\", "\\\\");
+            Outlook.readfromOutloock(filePath, AllEvents);
+            refreshData(AllEvents, table);
+        });
+        exportXML.setOnAction( e -> {
+            filePath = fileChooser.showOpenDialog(primaryStage).getAbsolutePath();
+            filePath = filePath.replace("\\", "\\\\");
+            XML.saveToXML(filePath, AllEvents);
+        });
+        importXML.setOnAction( e-> {
+            filePath = fileChooser.showOpenDialog(primaryStage).getAbsolutePath();
+            filePath = filePath.replace("\\", "\\\\");
+            XML.readFromXML(filePath, AllEvents);
+            refreshData(AllEvents,table);
+        });
+
         settingOption.setOnAction(e->SettingsWindow.display(primaryStage, table));
         aboutOption.setOnAction(e->{
             AboutWindow.display("This beta version of organizer was made by BKaszuba & MMadej", 400,150, primaryStage);
+        });
+        filterOption.setOnAction(e -> {
+            try {
+                FilterWindow.display(primaryStage, AllEvents);
+            } catch (SQLException e1) {
+                e1.printStackTrace();
+            }
         });
         Label infoAboutProgrma = new Label("Program was made By Bartlomiej Kaszuba & Michal Madej");
         StackPane infoAboutProgramLayout = new StackPane();
@@ -165,35 +211,48 @@ public class Main extends Application {
     }
 
     private void addButtonClicked(ObservableList<Event> allEvents) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+       DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
         Event event = new Event();
         event.setDate(LocalDate.parse(dateInput.getText(), formatter));
         event.setHour(hourInput.getText());
         event.setDescription(descriptionInput.getText());
-        allEvents.add(event);
+        allEvents.add(event); // Add immediately to app and then save to DB;
+        try {
+            SQLConnection.addDataToDB(dateInput.getText(), hourInput.getText(), descriptionInput.getText());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
         dateInput.clear();
         hourInput.clear();
         descriptionInput.clear();
     }
 
-    private void deleteButtonClicked(ObservableList<Event> AllEvents) {
-        ObservableList<Event> eventSelected,tmp;
-        tmp = FXCollections.observableArrayList();
-        //AllEvents = table.getItems();
+    private void editButtonClicked(Stage primaryStage, ObservableList<Event> allEvents, TableView<Event> table){
+        ObservableList<Event> eventSelected;
         eventSelected = table.getSelectionModel().getSelectedItems();
-        //System.out.println(eventSelected.get(0).getDescription());
+        EditWindow.display(primaryStage,allEvents ,eventSelected, table);
+
+    }
+
+
+    private void deleteButtonClicked(ObservableList<Event> AllEvents) {
+        ObservableList<Event> eventSelected;
+        eventSelected = table.getSelectionModel().getSelectedItems();
         for(int i=0;i<AllEvents.size();i++){
             if (eventSelected.get(0).getDescription().equals(AllEvents.get(i).getDescription())) {
-
-                //eventSelected.remove(0);
                 AllEvents.remove(i);
             }
+        }
+        try {
+            SQLConnection.deleteDataFromDB(eventSelected.get(0).getDate(), eventSelected.get(0).getHour(), eventSelected.get(0).getDescription());
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
 
     }
 
     //getAllEvents
-    public ObservableList<Event> getEvents(ObservableList<Event> allEvents){
+    public static ObservableList<Event> getEvents(ObservableList<Event> allEvents){
         ObservableList<Event> events = FXCollections.observableArrayList();
         for(int i=0; i<allEvents.size();i++){
             if(allEvents.get(i).getDate().equals(datePicker.getValue())){
@@ -203,19 +262,35 @@ public class Main extends Application {
         return events;
 
     }
-    public void colorDates(){
+
+    public static void refreshData(ObservableList<Event> AllEvents, TableView<Event> table){
+        datePicker.setDayCellFactory(colorAllDates(AllEvents));
+        table.setItems(getEvents(AllEvents)); //update data
+    }
+    public static Callback colorAllDates(ObservableList<Event> AllEvents){
         Callback<DatePicker,DateCell> dayCellFactory = new Callback<DatePicker, DateCell>(){
-            public DateCell call(final DatePicker datePicker1){
+            public DateCell call(final DatePicker datePicker){
                 return new DateCell(){
                     public void updateItem(LocalDate item, boolean empty){
+                        super.updateItem(item, empty);
                         DayOfWeek day = DayOfWeek.from(item);
-                        if( day ==DayOfWeek.SATURDAY){
-                            this.setTextFill(Color.RED);
+                        for(int i=0;i<AllEvents.size();i++){
+                            if(item.equals(AllEvents.get(i).getDate())){
+                                this.setTextFill(Color.RED);
+                                //this.setStyle("-fx-background-color: #ffc0cb;");
+                            }
                         }
                     }
                 };
             }
         };
+        return dayCellFactory;
+    }
+    public static void readCSSFile(Scene scene){
+        File f = new File("CSSFile.css");
+        scene.getStylesheets().clear();
+        scene.getStylesheets().add("file:///" + f.getAbsolutePath().replace("\\", "/"));
+
     }
 
 
